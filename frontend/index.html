@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps Tasks</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1d27;
+      border-bottom: 1px solid #2d3148;
+      padding: 16px 24px;
+    }
+
+    header h1 { font-size: 1.2rem; font-weight: 600; }
+    header p { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .card h2 {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .full { grid-column: span 2; }
+
+    .add-task {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus { border-color: #6366f1; }
+
+    button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    button:hover { background: #4f46e5; }
+    button.danger { background: #dc2626; }
+    button.danger:hover { background: #b91c1c; }
+    button.secondary { background: #374151; }
+    button.secondary:hover { background: #4b5563; }
+
+    .tarefa {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      margin-bottom: 8px;
+    }
+
+    .tarefa.done .tarefa-titulo {
+      text-decoration: line-through;
+      color: #4b5563;
+    }
+
+    .tarefa-titulo { flex: 1; font-size: 0.9rem; }
+    .tarefa-hora { font-size: 0.75rem; color: #4b5563; }
+
+    .health-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .health-box {
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .health-box .nome { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; }
+    .health-box .uptime { font-size: 0.72rem; color: #4b5563; margin-top: 4px; }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .dot.ok { background: #22c55e; }
+    .dot.err { background: #ef4444; }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .badge.info  { background: #1e3a5f; color: #60a5fa; }
+    .badge.warn  { background: #3b2e14; color: #f59e0b; }
+    .badge.error { background: #3b1414; color: #f87171; }
+    .badge.debug { background: #1f2937; color: #9ca3af; }
+
+    .filtros {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .fbtn {
+      background: #1f2937;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+    }
+
+    .fbtn.ativo { background: #6366f1; }
+
+    .log-lista { max-height: 300px; overflow-y: auto; }
+
+    .log-item {
+      font-family: monospace;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      background: #0f1117;
+      border-left: 3px solid;
+      word-break: break-all;
+    }
+
+    .log-item.INFO  { border-color: #3b82f6; }
+    .log-item.WARN  { border-color: #f59e0b; color: #fbbf24; }
+    .log-item.ERROR { border-color: #ef4444; color: #fca5a5; }
+    .log-item.DEBUG { border-color: #6b7280; color: #9ca3af; }
+
+    .log-hora    { color: #4b5563; margin-right: 6px; }
+    .log-nivel   { font-weight: bold; margin-right: 6px; }
+    .log-servico { color: #818cf8; margin-right: 6px; }
+
+    .vazio { text-align: center; color: #4b5563; padding: 24px; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ DevOps Tasks</h1>
+  <p>Microserviços · CI/CD · Monitoramento e Logs</p>
+</header>
+
+<div class="layout">
+
+  <div class="card">
+    <h2>📋 Tarefas — task-service</h2>
+    <div class="add-task">
+      <input type="text" id="inputTarefa" placeholder="Nova tarefa..." />
+      <button onclick="adicionarTarefa()">Adicionar</button>
+    </div>
+    <div id="listaTarefas"><p class="vazio">Nenhuma tarefa ainda.</p></div>
+  </div>
+
+  <div class="card">
+    <h2>🩺 Health Check</h2>
+    <div class="health-grid">
+      <div class="health-box">
+        <div class="nome">task-service · :3001</div>
+        <div id="status-task"><span class="dot err"></span>Verificando...</div>
+        <div class="uptime" id="uptime-task"></div>
+      </div>
+      <div class="health-box">
+        <div class="nome">log-service · :3002</div>
+        <div id="status-log"><span class="dot err"></span>Verificando...</div>
+        <div class="uptime" id="uptime-log"></div>
+      </div>
+    </div>
+    <button class="secondary" style="width:100%" onclick="verificarHealth()">Verificar agora</button>
+  </div>
+
+  <div class="card full">
+    <h2>📡 Logs — log-service</h2>
+    <div class="stats" id="stats">
+      <span class="badge info">INFO: 0</span>
+      <span class="badge warn">WARN: 0</span>
+      <span class="badge error">ERROR: 0</span>
+      <span class="badge debug">DEBUG: 0</span>
+    </div>
+    <div class="filtros">
+      <button class="fbtn ativo" onclick="filtrar('ALL', this)">Todos</button>
+      <button class="fbtn" onclick="filtrar('INFO', this)">INFO</button>
+      <button class="fbtn" onclick="filtrar('WARN', this)">WARN</button>
+      <button class="fbtn" onclick="filtrar('ERROR', this)">ERROR</button>
+      <button class="danger fbtn" onclick="limparLogs()" style="margin-left:auto">Limpar logs</button>
+    </div>
+    <div class="log-lista" id="listaLogs"><p class="vazio">Nenhum log ainda.</p></div>
+  </div>
+
+</div>
+
+<script>
+  const TASK = 'http://localhost:3001';
+  const LOG  = 'http://localhost:3002';
+  let filtroAtivo = 'ALL';
+
+  async function carregarTarefas() {
+    try {
+      const res = await fetch(`${TASK}/tasks`);
+      const tarefas = await res.json();
+      renderTarefas(tarefas);
+    } catch {
+      document.getElementById('listaTarefas').innerHTML =
+        '<p class="vazio">Erro ao conectar com task-service.</p>';
+    }
+  }
+
+  function renderTarefas(tarefas) {
+    const el = document.getElementById('listaTarefas');
+    if (!tarefas.length) {
+      el.innerHTML = '<p class="vazio">Nenhuma tarefa ainda.</p>';
+      return;
+    }
+    el.innerHTML = tarefas.map(t => `
+      <div class="tarefa ${t.done ? 'done' : ''}">
+        <span class="tarefa-titulo">${esc(t.title)}</span>
+        <span class="tarefa-hora">${new Date(t.criadaEm).toLocaleTimeString('pt-BR')}</span>
+        <button class="secondary" onclick="alternarTarefa(${t.id})">
+          ${t.done ? 'Desfazer' : 'Concluir'}
+        </button>
+        <button class="danger" onclick="deletarTarefa(${t.id})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  async function adicionarTarefa() {
+    const input = document.getElementById('inputTarefa');
+    const title = input.value.trim();
+    if (!title) return;
+    await fetch(`${TASK}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title })
+    });
+    input.value = '';
+    atualizar();
+  }
+
+  async function alternarTarefa(id) {
+    await fetch(`${TASK}/tasks/${id}/done`, { method: 'PATCH' });
+    atualizar();
+  }
+
+  async function deletarTarefa(id) {
+    await fetch(`${TASK}/tasks/${id}`, { method: 'DELETE' });
+    atualizar();
+  }
+
+  async function carregarLogs() {
+    try {
+      const url = filtroAtivo === 'ALL'
+        ? `${LOG}/logs`
+        : `${LOG}/logs?level=${filtroAtivo}`;
+      const res = await fetch(url);
+      const logs = await res.json();
+      renderLogs(logs);
+      carregarStats();
+    } catch {
+      document.getElementById('listaLogs').innerHTML =
+        '<p class="vazio">Erro ao conectar com log-service.</p>';
+    }
+  }
+
+  function renderLogs(logs) {
+    const el = document.getElementById('listaLogs');
+    if (!logs.length) {
+      el.innerHTML = '<p class="vazio">Nenhum log ainda.</p>';
+      return;
+    }
+    el.innerHTML = logs.map(l => {
+      const hora = new Date(l.timestamp).toLocaleTimeString('pt-BR');
+      return `<div class="log-item ${l.level}">
+        <span class="log-hora">${hora}</span>
+        <span class="log-nivel">[${l.level}]</span>
+        <span class="log-servico">[${l.service}]</span>
+        ${esc(l.message)}
+      </div>`;
+    }).join('');
+  }
+
+  async function carregarStats() {
+    try {
+      const res = await fetch(`${LOG}/logs/stats`);
+      const s = await res.json();
+      document.getElementById('stats').innerHTML = `
+        <span class="badge info">INFO: ${s.INFO}</span>
+        <span class="badge warn">WARN: ${s.WARN}</span>
+        <span class="badge error">ERROR: ${s.ERROR}</span>
+        <span class="badge debug">DEBUG: ${s.DEBUG}</span>
+        <span style="font-size:0.75rem;color:#4b5563">Total: ${s.total}</span>
+      `;
+    } catch {}
+  }
+
+  async function limparLogs() {
+    await fetch(`${LOG}/logs`, { method: 'DELETE' });
+    carregarLogs();
+  }
+
+  function filtrar(nivel, btn) {
+    filtroAtivo = nivel;
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    carregarLogs();
+  }
+
+  async function verificarHealth() {
+    const servicos = [
+      { url: TASK, statusId: 'status-task', uptimeId: 'uptime-task' },
+      { url: LOG,  statusId: 'status-log',  uptimeId: 'uptime-log'  }
+    ];
+
+    for (const s of servicos) {
+      try {
+        const res = await fetch(`${s.url}/health`);
+        const data = await res.json();
+        document.getElementById(s.statusId).innerHTML =
+          `<span class="dot ok"></span>${data.status.toUpperCase()}`;
+        document.getElementById(s.uptimeId).textContent =
+          `Uptime: ${Math.floor(data.uptime)}s`;
+      } catch {
+        document.getElementById(s.statusId).innerHTML =
+          `<span class="dot err"></span>OFFLINE`;
+        document.getElementById(s.uptimeId).textContent = '';
+      }
+    }
+  }
+
+  function atualizar() {
+    carregarTarefas();
+    carregarLogs();
+  }
+
+  function esc(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  document.getElementById('inputTarefa').addEventListener('keydown', e => {
+    if (e.key === 'Enter') adicionarTarefa();
+  });
+
+  atualizar();
+  verificarHealth();
+  setInterval(() => { carregarLogs(); verificarHealth(); }, 5000);
+</script>
+
+</body>
+</html>
