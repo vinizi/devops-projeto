@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Tasks — Painel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ink: {
+              950: '#0b0f17',
+              900: '#0f1320',
+              850: '#141826',
+              800: '#1a1f2e',
+              700: '#252b3d',
+              600: '#323849',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .scroll-thin::-webkit-scrollbar { width: 6px; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: #323849; border-radius: 3px; }
+    .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+  </style>
+</head>
+<body class="bg-ink-950 text-slate-200 min-h-screen antialiased">
+
+  <header class="border-b border-ink-700/60 bg-ink-900/80 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div>
+        <h1 class="text-base font-semibold text-slate-100 tracking-tight">DevOps Tasks</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Microserviços · CI/CD · Monitoramento e Logs</p>
+      </div>
+      <div class="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+        <span class="h-2 w-2 rounded-full bg-indigo-400/80"></span>
+        <span>localhost · 3001 / 3002</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- TAREFAS -->
+    <section class="bg-ink-900 border border-ink-700/60 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Tarefas — task-service</h2>
+        <span class="text-[11px] text-slate-500 font-mono">:3001</span>
+      </div>
+
+      <div class="flex gap-2 mb-5">
+        <input
+          id="inputTarefa"
+          type="text"
+          placeholder="Nova tarefa..."
+          class="flex-1 bg-ink-850 border border-ink-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 rounded-md px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition"
+        />
+        <button onclick="adicionarTarefa()" class="bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium px-4 rounded-md transition">
+          Adicionar
+        </button>
+      </div>
+
+      <div id="listaTarefas" class="space-y-2"></div>
+    </section>
+
+    <!-- HEALTH -->
+    <section class="bg-ink-900 border border-ink-700/60 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Health Check</h2>
+        <span class="text-[11px] text-slate-500">auto · 5s</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div class="bg-ink-850 border border-ink-700/70 rounded-lg p-4">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2">task-service · :3001</div>
+          <div id="status-task" class="flex items-center text-sm text-slate-300">
+            <span class="h-2 w-2 rounded-full bg-slate-500 mr-2"></span>Verificando...
+          </div>
+          <div id="uptime-task" class="text-[11px] text-slate-500 mt-2 font-mono"></div>
+        </div>
+        <div class="bg-ink-850 border border-ink-700/70 rounded-lg p-4">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2">log-service · :3002</div>
+          <div id="status-log" class="flex items-center text-sm text-slate-300">
+            <span class="h-2 w-2 rounded-full bg-slate-500 mr-2"></span>Verificando...
+          </div>
+          <div id="uptime-log" class="text-[11px] text-slate-500 mt-2 font-mono"></div>
+        </div>
+      </div>
+
+      <button onclick="verificarHealth()" class="w-full bg-ink-800 hover:bg-ink-700 border border-ink-700 text-slate-300 text-sm py-2 rounded-md transition">
+        Verificar agora
+      </button>
+    </section>
+
+    <!-- DEMO DE LOGS -->
+    <section class="bg-ink-900 border border-ink-700/60 rounded-xl p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Demonstração de Logs</h2>
+        <span class="text-[11px] text-slate-500">aciona logs manualmente</span>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <button onclick="dispararInfo()" class="flex flex-col items-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-300 text-sm font-medium py-3 rounded-lg transition">
+          <span class="text-lg">ℹ️</span>
+          <span>Gerar INFO</span>
+          <span class="text-[11px] text-blue-400/70">adicionar tarefa</span>
+        </button>
+        <button onclick="dispararWarn()" class="flex flex-col items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-300 text-sm font-medium py-3 rounded-lg transition">
+          <span class="text-lg">⚠️</span>
+          <span>Gerar WARN</span>
+          <span class="text-[11px] text-amber-400/70">acesso sem permissão</span>
+        </button>
+        <button onclick="dispararError()" class="flex flex-col items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-300 text-sm font-medium py-3 rounded-lg transition">
+          <span class="text-lg">🔴</span>
+          <span>Gerar ERROR</span>
+          <span class="text-[11px] text-red-400/70">falha crítica</span>
+        </button>
+        <button onclick="dispararDebug()" class="flex flex-col items-center gap-1.5 bg-slate-500/10 hover:bg-slate-500/20 border border-slate-500/20 text-slate-300 text-sm font-medium py-3 rounded-lg transition">
+          <span class="text-lg">🐛</span>
+          <span>Gerar DEBUG</span>
+          <span class="text-[11px] text-slate-400/70">estado interno</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section class="bg-ink-900 border border-ink-700/60 rounded-xl p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Logs — log-service</h2>
+        <span class="text-[11px] text-slate-500 font-mono">:3002</span>
+      </div>
+
+      <div id="stats" class="flex flex-wrap gap-2 mb-4"></div>
+
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <button data-filtro="ALL"   class="fbtn px-3 py-1 rounded-md text-xs bg-indigo-500 text-white">Todos</button>
+        <button data-filtro="INFO"  class="fbtn px-3 py-1 rounded-md text-xs bg-ink-800 hover:bg-ink-700 text-slate-300">INFO</button>
+        <button data-filtro="WARN"  class="fbtn px-3 py-1 rounded-md text-xs bg-ink-800 hover:bg-ink-700 text-slate-300">WARN</button>
+        <button data-filtro="ERROR" class="fbtn px-3 py-1 rounded-md text-xs bg-ink-800 hover:bg-ink-700 text-slate-300">ERROR</button>
+        <button data-filtro="DEBUG" class="fbtn px-3 py-1 rounded-md text-xs bg-ink-800 hover:bg-ink-700 text-slate-300">DEBUG</button>
+        <button onclick="limparLogs()" class="ml-auto px-3 py-1 rounded-md text-xs bg-red-500/90 hover:bg-red-500 text-white transition">
+          Limpar logs
+        </button>
+      </div>
+
+      <div id="listaLogs" class="max-h-80 overflow-y-auto scroll-thin space-y-1.5 pr-1"></div>
+    </section>
+
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-6 pb-8 text-[11px] text-slate-600 text-center">
+    Projeto acadêmico · DevOps & Microserviços
+  </footer>
+
+<script>
+  const TASK = 'http://localhost:3001';
+  const LOG  = 'http://localhost:3002';
+  let filtroAtivo = 'ALL';
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ---------- TAREFAS ----------
+  async function carregarTarefas() {
+    try {
+      const res = await fetch(`${TASK}/tasks`);
+      renderTarefas(await res.json());
+    } catch {
+      $('listaTarefas').innerHTML = vazio('Erro ao conectar com task-service.');
+    }
+  }
+
+  function renderTarefas(tarefas) {
+    const el = $('listaTarefas');
+    if (!tarefas.length) { el.innerHTML = vazio('Nenhuma tarefa ainda.'); return; }
+    el.innerHTML = tarefas.map(t => `
+      <div class="flex items-center gap-3 bg-ink-850 border border-ink-700/70 rounded-md px-3 py-2">
+        <span class="h-1.5 w-1.5 rounded-full ${t.done ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+        <span class="flex-1 text-sm ${t.done ? 'line-through text-slate-500' : 'text-slate-200'}">${esc(t.title)}</span>
+        <span class="text-[11px] text-slate-500 font-mono">${new Date(t.criadaEm).toLocaleTimeString('pt-BR')}</span>
+        <button onclick="alternarTarefa(${t.id})" class="text-xs px-2.5 py-1 rounded bg-ink-800 hover:bg-ink-700 text-slate-300 transition">
+          ${t.done ? 'Desfazer' : 'Concluir'}
+        </button>
+        <button onclick="deletarTarefa(${t.id})" class="text-xs px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-300 transition">
+          Remover
+        </button>
+      </div>
+    `).join('');
+  }
+
+  async function adicionarTarefa() {
+    const input = $('inputTarefa');
+    const title = input.value.trim();
+    await fetch(`${TASK}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title })
+    });
+    input.value = '';
+    atualizar();
+  }
+
+  $('inputTarefa').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') adicionarTarefa();
+  });
+
+  async function alternarTarefa(id) {
+    await fetch(`${TASK}/tasks/${id}/done`, { method: 'PATCH' });
+    atualizar();
+  }
+  async function deletarTarefa(id) {
+    await fetch(`${TASK}/tasks/${id}`, { method: 'DELETE' });
+    atualizar();
+  }
+
+  // ---------- DEMO LOGS ----------
+  async function dispararInfo() {
+    await adicionarTarefa();
+    atualizar();
+  }
+
+  async function dispararWarn() {
+    await fetch(`${TASK}/demo/warn`, { method: 'POST' });
+    atualizar();
+  }
+
+  async function dispararError() {
+    await fetch(`${TASK}/demo/error`, { method: 'POST' });
+    atualizar();
+  }
+
+  async function dispararDebug() {
+    await fetch(`${TASK}/demo/debug`, { method: 'POST' });
+    atualizar();
+  }
+
+  // ---------- HEALTH ----------
+  async function verificarHealth() {
+    await Promise.all([
+      checar(`${TASK}/health`, 'status-task', 'uptime-task'),
+      checar(`${LOG}/health`,  'status-log',  'uptime-log'),
+    ]);
+  }
+
+  async function checar(url, idStatus, idUptime) {
+    const el = $(idStatus);
+    const up = $(idUptime);
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      el.innerHTML = `<span class="h-2 w-2 rounded-full bg-emerald-400 mr-2"></span><span class="text-emerald-300">Online</span>`;
+      if (data.uptime != null) up.textContent = `uptime: ${Math.round(data.uptime)}s`;
+    } catch {
+      el.innerHTML = `<span class="h-2 w-2 rounded-full bg-red-400 mr-2"></span><span class="text-red-300">Offline</span>`;
+      up.textContent = '';
+    }
+  }
+
+  // ---------- LOGS ----------
+  async function carregarLogs() {
+    try {
+      const url = filtroAtivo === 'ALL' ? `${LOG}/logs` : `${LOG}/logs?level=${filtroAtivo}`;
+      const res = await fetch(url);
+      renderLogs(await res.json());
+      carregarStats();
+    } catch {
+      $('listaLogs').innerHTML = vazio('Erro ao conectar com log-service.');
+    }
+  }
+
+  const LOG_STYLES = {
+    INFO:  'border-blue-400/70 text-slate-300',
+    WARN:  'border-amber-400/70 text-amber-200',
+    ERROR: 'border-red-400/70 text-red-200',
+    DEBUG: 'border-slate-500/70 text-slate-400',
+  };
+
+  function renderLogs(logs) {
+    const el = $('listaLogs');
+    if (!logs.length) { el.innerHTML = vazio('Nenhum log ainda.'); return; }
+    el.innerHTML = logs.map(l => {
+      const hora = new Date(l.timestamp).toLocaleTimeString('pt-BR');
+      const cls = LOG_STYLES[l.level] || LOG_STYLES.DEBUG;
+      return `
+        <div class="font-mono text-xs bg-ink-850 border-l-2 ${cls} pl-3 pr-2 py-1.5 rounded-r-md break-all">
+          <span class="text-slate-500 mr-2">${hora}</span>
+          <span class="font-semibold mr-2">[${l.level}]</span>
+          <span class="text-indigo-300 mr-2">[${esc(l.service)}]</span>
+          ${esc(l.message)}
+        </div>`;
+    }).join('');
+  }
+
+  async function carregarStats() {
+    try {
+      const res = await fetch(`${LOG}/logs/stats`);
+      const s = await res.json();
+      $('stats').innerHTML = `
+        ${badge('INFO',  s.INFO,  'bg-blue-500/10 text-blue-300 border-blue-500/20')}
+        ${badge('WARN',  s.WARN,  'bg-amber-500/10 text-amber-300 border-amber-500/20')}
+        ${badge('ERROR', s.ERROR, 'bg-red-500/10 text-red-300 border-red-500/20')}
+        ${badge('DEBUG', s.DEBUG, 'bg-slate-500/10 text-slate-300 border-slate-500/20')}
+        <span class="ml-auto text-[11px] text-slate-500 self-center">Total: ${s.total}</span>
+      `;
+    } catch {}
+  }
+
+  const badge = (label, n, cls) =>
+    `<span class="text-[11px] font-medium px-2.5 py-1 rounded-full border ${cls}">${label}: ${n ?? 0}</span>`;
+
+  async function limparLogs() {
+    await fetch(`${LOG}/logs`, { method: 'DELETE' });
+    carregarLogs();
+  }
+
+  document.querySelectorAll('.fbtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filtroAtivo = btn.dataset.filtro;
+      document.querySelectorAll('.fbtn').forEach(b => {
+        b.classList.remove('bg-indigo-500', 'text-white');
+        b.classList.add('bg-ink-800', 'hover:bg-ink-700', 'text-slate-300');
+      });
+      btn.classList.remove('bg-ink-800', 'hover:bg-ink-700', 'text-slate-300');
+      btn.classList.add('bg-indigo-500', 'text-white');
+      carregarLogs();
+    });
+  });
+
+  const vazio = (msg) => `<p class="text-center text-sm text-slate-500 py-6">${msg}</p>`;
+
+  function atualizar() {
+    carregarTarefas();
+    carregarLogs();
+  }
+
+  atualizar();
+  verificarHealth();
+  setInterval(verificarHealth, 5000);
+  setInterval(atualizar, 5000);
+</script>
+
+</body>
+</html>
